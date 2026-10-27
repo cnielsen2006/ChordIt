@@ -1,0 +1,8 @@
+{
+  "name": "chordit",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/chords.test.mjs"
+  }
+}

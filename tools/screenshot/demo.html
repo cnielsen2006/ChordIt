@@ -1,0 +1,62 @@
+<!doctype html>
+<!-- Renders the real overlay (src/content.js) over a mock video page for the
+     README screenshot. Run tools/screenshot.ps1 to regenerate docs/screenshot.png. -->
+<meta charset="utf-8">
+<title>ChordIt demo</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #0f0f0f; font-family: system-ui, "Segoe UI", sans-serif; color: #f1f1f1; }
+  .page { display: flex; flex-direction: column; gap: 14px; padding: 24px 32px; }
+  .video {
+    position: relative; width: 860px; aspect-ratio: 16 / 9; border-radius: 12px; overflow: hidden;
+    background: radial-gradient(ellipse at 30% 40%, #3b2a5a, transparent 60%),
+                radial-gradient(ellipse at 75% 70%, #12436b, transparent 55%), #121018;
+  }
+  .stage { position: absolute; left: 0; right: 0; bottom: 0; height: 38%;
+    background: linear-gradient(transparent, rgba(0,0,0,.55)); }
+  .light { position: absolute; top: -20%; width: 180px; height: 140%; opacity: .18;
+    background: linear-gradient(#ffe7a3, transparent 80%); filter: blur(8px); transform-origin: top; }
+  .controls { position: absolute; left: 0; right: 0; bottom: 0; padding: 10px 14px; }
+  .progress { height: 4px; background: rgba(255,255,255,.25); border-radius: 2px; }
+  .progress div { width: 38%; height: 100%; background: #f00; border-radius: 2px; }
+  .time { font-size: 13px; margin-top: 8px; opacity: .9; }
+  h1 { font-size: 20px; margin: 0; font-weight: 600; }
+  .meta { color: #aaa; font-size: 14px; }
+</style>
+<div class="page">
+  <div class="video">
+    <div class="light" style="left: 18%; transform: rotate(14deg)"></div>
+    <div class="light" style="left: 52%; transform: rotate(-10deg)"></div>
+    <div class="stage"></div>
+    <div class="controls">
+      <div class="progress"><div></div></div>
+      <div class="time">▶ &nbsp; 1:27 / 3:49</div>
+    </div>
+  </div>
+  <h1>Acoustic Session — Live in the Studio</h1>
+  <div class="meta">Example music video</div>
+</div>
+<script>
+  // Minimal stand-ins for the extension APIs content.js uses.
+  const listeners = [];
+  window.chrome = {
+    runtime: {
+      onMessage: { addListener: (fn) => listeners.push(fn), removeListener() {} },
+      sendMessage: () => Promise.resolve(),
+    },
+    storage: { local: {
+      get: () => Promise.resolve({ capo: 0, delayMs: 450, showChroma: true, pos: { x: 640, y: 40 } }),
+      set: () => Promise.resolve(),
+    } },
+  };
+</script>
+<script src="../../src/content.js"></script>
+<script>
+  const send = (data) => listeners.forEach((fn) => fn({ type: 'chordit:update', data }, {}, () => {}));
+  const key = { tonic: 7, mode: 'major' };
+  const chroma = [0.55, 0.08, 0.35, 0.06, 0.92, 0.12, 0.05, 0.62, 0.07, 1, 0.1, 0.18];
+  // Chord history G D Em C, current Am7.
+  for (const [root, quality] of [[0, ''], [4, 'm'], [2, ''], [7, ''], [9, 'm7']]) {
+    send({ chord: { root, quality, bass: null, confidence: 0.86 }, silent: false, key, chroma, tuningCents: 0 });
+  }
+  setTimeout(() => send({ chord: { root: 9, quality: 'm7', bass: null, confidence: 0.86 }, silent: false, key, chroma, tuningCents: 0 }), 50);
+</script>
